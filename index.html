@@ -1,0 +1,1092 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Attire Checker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&amp;family=Source+Sans+Pro:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    .font-heading {
+      font-family: 'Playfair Display', Georgia, serif;
+    }
+    .font-body {
+      font-family: 'Source Sans Pro', Arial, sans-serif;
+    }
+    .checklist-item {
+      transition: all 0.3s ease;
+    }
+    .checklist-item:hover {
+      transform: translateX(4px);
+    }
+    .checklist-item.checked {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    }
+    .checklist-item.zero-score {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      opacity: 0.7;
+    }
+    .score-circle {
+      background: conic-gradient(var(--score-color) calc(var(--score) * 3.6deg), #e5e7eb calc(var(--score) * 3.6deg));
+    }
+    .upload-zone {
+      border: 3px dashed #cbd5e1;
+      transition: all 0.3s ease;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #1e3a5f;
+      background: #f8fafc;
+    }
+    .tip-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .tip-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    @keyframes checkmark {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    .check-animate {
+      animation: checkmark 0.3s ease-out;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .slide-in {
+      animation: slideIn 0.4s ease-out;
+    }
+    .detection-warning {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-left: 4px solid #f59e0b;
+    }
+    .not-detected-badge {
+      background: #fee2e2;
+      color: #dc2626;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      font-weight: 600;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full font-body bg-slate-50 text-slate-800 overflow-auto">
+  <div class="h-full w-full"><!-- Header -->
+   <header class="bg-gradient-to-r from-slate-800 to-slate-700 text-white py-4 px-6 shadow-lg">
+    <div class="max-w-7xl mx-auto flex items-center justify-between mb-4">
+     <div class="flex items-center gap-3">
+      <svg class="w-10 h-10" viewbox="0 0 40 40" fill="none"><rect x="8" y="6" width="24" height="28" rx="2" fill="#f1f5f9" stroke="#1e3a5f" stroke-width="2" /> <path d="M20 14c2.5 0 4.5-2 4.5-4.5S22.5 5 20 5s-4.5 2-4.5 4.5S17.5 14 20 14z" fill="#1e3a5f" /> <path d="M12 34v-8c0-4.4 3.6-8 8-8s8 3.6 8 8v8" fill="#1e3a5f" /> <rect x="18" y="20" width="4" height="6" fill="#c7a94e" />
+      </svg>
+      <h1 id="app-title" class="font-heading text-2xl font-bold">Interview Attire Checker</h1>
+     </div>
+     <div class="text-sm opacity-80">
+      Professional Dress Assessment
+     </div>
+    </div><!-- Navigation Tabs -->
+    <nav class="flex gap-2 border-t border-slate-600 pt-4"><button class="nav-tab active px-4 py-2 rounded-t-lg bg-slate-700 font-semibold" data-tab="assessment">📋 Assessment</button> <button class="nav-tab px-4 py-2 rounded-t-lg hover:bg-slate-600 font-semibold" data-tab="leaderboard">🏆 Leaderboard</button> <button class="nav-tab px-4 py-2 rounded-t-lg hover:bg-slate-600 font-semibold" data-tab="testimonials">💬 Testimonials</button>
+    </nav>
+   </header>
+   <main class="max-w-7xl mx-auto p-4 md:p-6"><!-- Assessment Tab -->
+    <div id="assessment-tab" class="tab-content active">
+     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><!-- Left Column - Photo Upload & Checklist -->
+      <div class="lg:col-span-2 space-y-6"><!-- Student Information -->
+       <div class="bg-white rounded-2xl shadow-md p-5 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+         <div><label class="block text-sm font-semibold text-slate-600 mb-2">👤 Full Name *</label> <input type="text" id="student-name" placeholder="Enter your full name" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-slate-600 focus:outline-none transition-colors text-lg">
+         </div>
+         <div><label class="block text-sm font-semibold text-slate-600 mb-2">🏫 Class *</label> <input type="text" id="student-class" placeholder="e.g., 10A, 11B, Senior Year" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-slate-600 focus:outline-none transition-colors text-lg">
+         </div>
+        </div>
+       </div><!-- Photo Upload Area -->
+       <div class="bg-white rounded-2xl shadow-md p-5">
+        <h2 class="font-heading text-xl font-bold text-slate-800 mb-4">📸 Upload Your Photo</h2>
+        <div id="upload-zone" class="upload-zone rounded-xl p-8 text-center cursor-pointer">
+         <div id="upload-content">
+          <svg class="w-16 h-16 mx-auto text-slate-400 mb-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p class="text-slate-600 font-semibold mb-2">Drop your photo here or click to upload</p>
+          <p class="text-slate-400 text-sm">Supports JPG, PNG (Max 10MB)</p>
+         </div>
+         <div id="preview-container" class="hidden"><img id="preview-image" class="max-h-64 mx-auto rounded-lg shadow-md" alt="Your uploaded photo"> <button id="remove-photo" class="mt-4 px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold"> ✕ Remove Photo </button>
+         </div>
+        </div><input type="file" id="file-input" accept="image/*" class="hidden"> <!-- Detection Status -->
+        <div id="detection-status" class="mt-4 p-4 detection-warning rounded-xl hidden">
+         <p class="text-sm"><strong>⚠️ Item Detection Analysis:</strong></p>
+         <p class="text-xs text-slate-700 mt-2">Based on the image provided, some items may not be clearly visible. Items marked with "❌ Not Detected" will receive 0 points regardless of checkbox status.</p>
+         <div id="detection-items" class="mt-3 space-y-1 text-xs"></div>
+        </div>
+       </div><!-- Attire Checklist -->
+       <div class="bg-white rounded-2xl shadow-md p-5">
+        <h2 class="font-heading text-xl font-bold text-slate-800 mb-4">✅ Attire Checklist</h2>
+        <p class="text-slate-500 text-sm mb-4">Check each item visible in your photo. Items not detected will score 0 points.</p>
+        <div id="checklist" class="space-y-3"><!-- Hair & Face -->
+         <div class="mb-4">
+          <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide mb-2">Hair &amp; Face</h3>
+          <div class="space-y-2"><label class="checklist-item flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer" data-item="neat-hair"> <input type="checkbox" data-item="neat-hair" class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500"> <span class="flex-1">Neat and tidy hairstyle</span> <span class="text-xs bg-slate-200 px-2 py-1 rounded-full">+10</span> </label> <label class="checklist-item flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer" data-item="natural-makeup"> <input type="checkbox" data-item="natural-makeup" class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500"> <span class="flex-1">Natural/minimal makeup (if applicable)</span> <span class="text-xs bg-slate-200 px-2 py-1 rounded-full">+10</span> </label>
+          </div>
+         </div><!-- Upper Body -->
+         <div class="mb-4">
+          <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide mb-2">Upper Body</h3>
+          <div class="space-y-2"><label class="checklist-item flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer" data-item="formal-shirt"> <input type="checkbox" data-item="formal-shirt" class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500"> <span class="flex-1">Formal shirt/blouse (solid color)</span> <span class="text-xs bg-slate-200 px-2 py-1 rounded-full">+15</span> </label> <label class="checklist-item flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer" data-item="blazer"> <input type="checkbox" data-item="blazer" class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500"> <span class="flex-1">Blazer/suit jacket</span> <span class="text-xs bg-slate-200 px-2 py-1 rounded-full">+15</span> </label> <label class="checklist-item flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer" data-item="tie"> <input type="checkbox" data-item="tie" class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500"> <span class="flex-1">Tie/scarf (if applicable)</span> <span class="text-xs bg-slate-200 px-2 py-1 rounded-full">+10</span> </label>
+          </div>
+         </div><!-- Lower Body -->
+         <div class="mb-4">
+          <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide mb-2">Lower Body</h3>
+          <div class="space-y-2"><label class="checklist-item flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer" data-item="formal-pants"> <input type="checkbox" data-item="formal-pants" class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500"> <span class="flex-1">Formal pants/skirt</span> <span class="text-xs bg-slate-200 px-2 py-1 rounded-full">+15</span> </label> <label class="checklist-item flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer" data-item="formal-shoes"> <input type="checkbox" data-item="formal-shoes" class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500"> <span class="flex-1">Formal closed-toe shoes</span> <span class="text-xs bg-slate-200 px-2 py-1 rounded-full">+15</span> </label>
+          </div>
+         </div><!-- Accessories & Details -->
+         <div class="mb-4">
+          <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide mb-2">Accessories &amp; Details</h3>
+          <div class="space-y-2"><label class="checklist-item flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer" data-item="minimal-jewelry"> <input type="checkbox" data-item="minimal-jewelry" class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500"> <span class="flex-1">Minimal/professional jewelry</span> <span class="text-xs bg-slate-200 px-2 py-1 rounded-full">+5</span> </label> <label class="checklist-item flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer" data-item="clean-nails"> <input type="checkbox" data-item="clean-nails" class="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500"> <span class="flex-1">Clean and trimmed nails</span> <span class="text-xs bg-slate-200 px-2 py-1 rounded-full">+5</span> </label>
+          </div>
+         </div>
+        </div>
+       </div><!-- Score Display & Submit -->
+       <div class="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl shadow-lg p-6 text-white">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+         <div class="text-center md:text-left">
+          <h3 class="font-heading text-2xl font-bold mb-2">Your Score</h3>
+          <p class="text-slate-300 text-sm">Based on detected items</p>
+         </div>
+         <div class="relative">
+          <div id="score-circle" class="score-circle w-32 h-32 rounded-full flex items-center justify-center" style="--score: 0; --score-color: #ef4444;">
+           <div class="bg-slate-700 w-24 h-24 rounded-full flex items-center justify-center"><span id="score-display" class="text-4xl font-bold">0</span> <span class="text-lg">/100</span>
+           </div>
+          </div>
+         </div>
+         <div class="text-center md:text-right">
+          <p id="score-feedback" class="text-lg font-semibold mb-2">Upload a photo to start!</p>
+          <p id="score-details" class="text-slate-300 text-sm">0 of 10 items checked</p>
+         </div>
+        </div>
+        <div class="mt-6 pt-6 border-t border-slate-600"><button id="submit-btn" class="w-full py-4 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-lg rounded-xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"> 📤 Submit to Teacher </button>
+         <p id="submit-status" class="text-center text-sm mt-3 text-slate-400"></p>
+        </div>
+       </div>
+      </div><!-- Right Column - Tips & Guidelines -->
+      <div class="space-y-6"><!-- Quick Tips -->
+       <div class="bg-white rounded-2xl shadow-md p-5 sticky top-4">
+        <h2 class="font-heading text-xl font-bold text-slate-800 mb-4">📝 Formal Attire Guide</h2>
+        <div class="space-y-4"><!-- Tip 1 -->
+         <div class="tip-card bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4">
+          <div class="flex items-start gap-3">
+           <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+            <svg viewbox="0 0 40 40" class="w-8 h-8"><rect x="10" y="8" width="20" height="24" rx="1" fill="#3b82f6" /> <rect x="14" y="8" width="12" height="6" fill="#1e40af" /> <circle cx="20" cy="18" r="2" fill="#fbbf24" /> <path d="M15 32v-8l5-4 5 4v8" fill="#1e3a8a" />
+            </svg>
+           </div>
+           <div>
+            <h4 class="font-semibold text-slate-800">Formal Shirt</h4>
+            <p class="text-sm text-slate-600">Solid colors like white, light blue, or cream. Long sleeves preferred.</p>
+           </div>
+          </div>
+         </div><!-- Tip 2 -->
+         <div class="tip-card bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4">
+          <div class="flex items-start gap-3">
+           <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+            <svg viewbox="0 0 40 40" class="w-8 h-8"><path d="M8 10h24l-2 24H10L8 10z" fill="#4b5563" /> <path d="M12 10l2-4h12l2 4" fill="#374151" /> <rect x="14" y="16" width="12" height="2" fill="#9ca3af" /> <rect x="14" y="22" width="8" height="2" fill="#9ca3af" />
+            </svg>
+           </div>
+           <div>
+            <h4 class="font-semibold text-slate-800">Blazer/Jacket</h4>
+            <p class="text-sm text-slate-600">Navy, black, or charcoal. Should fit well at shoulders.</p>
+           </div>
+          </div>
+         </div><!-- Tip 3 -->
+         <div class="tip-card bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4">
+          <div class="flex items-start gap-3">
+           <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+            <svg viewbox="0 0 40 40" class="w-8 h-8"><rect x="17" y="6" width="6" height="4" rx="1" fill="#92400e" /> <path d="M18 10h4v6l2 18h-8l2-18v-6z" fill="#dc2626" /> <circle cx="20" cy="12" r="1.5" fill="#fbbf24" />
+            </svg>
+           </div>
+           <div>
+            <h4 class="font-semibold text-slate-800">Tie (Optional)</h4>
+            <p class="text-sm text-slate-600">Solid or simple pattern. Should reach belt buckle.</p>
+           </div>
+          </div>
+         </div><!-- Tip 4 -->
+         <div class="tip-card bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4">
+          <div class="flex items-start gap-3">
+           <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+            <svg viewbox="0 0 40 40" class="w-8 h-8"><rect x="8" y="8" width="24" height="20" rx="2" fill="#374151" /> <rect x="8" y="28" width="24" height="6" fill="#4b5563" />
+            </svg>
+           </div>
+           <div>
+            <h4 class="font-semibold text-slate-800">Formal Pants</h4>
+            <p class="text-sm text-slate-600">Dark colors, well-pressed. No jeans or cargo pants.</p>
+           </div>
+          </div>
+         </div><!-- Tip 5 -->
+         <div class="tip-card bg-gradient-to-r from-rose-50 to-red-50 rounded-xl p-4">
+          <div class="flex items-start gap-3">
+           <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+            <svg viewbox="0 0 40 40" class="w-8 h-8"><ellipse cx="20" cy="30" rx="12" ry="4" fill="#1f2937" /> <path d="M10 26c0-6 4-10 10-10s10 4 10 10" fill="#374151" /> <ellipse cx="20" cy="26" rx="8" ry="3" fill="#1f2937" />
+            </svg>
+           </div>
+           <div>
+            <h4 class="font-semibold text-slate-800">Formal Shoes</h4>
+            <p class="text-sm text-slate-600">Leather, closed-toe. Black or brown. Clean and polished.</p>
+           </div>
+          </div>
+         </div>
+        </div><!-- Do's and Don'ts -->
+        <div class="mt-6 pt-4 border-t border-slate-200">
+         <div class="grid grid-cols-2 gap-4">
+          <div class="bg-emerald-50 rounded-xl p-4">
+           <h4 class="font-semibold text-emerald-800 mb-2">✅ Do's</h4>
+           <ul class="text-sm text-emerald-700 space-y-1">
+            <li>• Iron your clothes</li>
+            <li>• Keep hair neat</li>
+            <li>• Minimal accessories</li>
+            <li>• Neutral colors</li>
+           </ul>
+          </div>
+          <div class="bg-red-50 rounded-xl p-4">
+           <h4 class="font-semibold text-red-800 mb-2">❌ Don'ts</h4>
+           <ul class="text-sm text-red-700 space-y-1">
+            <li>• Bright/loud colors</li>
+            <li>• Casual wear</li>
+            <li>• Heavy perfume</li>
+            <li>• Flashy jewelry</li>
+           </ul>
+          </div>
+         </div>
+        </div><!-- Color Guide -->
+        <div class="mt-4 p-4 bg-slate-50 rounded-xl">
+         <h4 class="font-semibold text-slate-800 mb-3">🎨 Recommended Colors</h4>
+         <div class="flex flex-wrap gap-2">
+          <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow-sm">
+           <div class="w-4 h-4 rounded-full bg-slate-800"></div><span class="text-xs">Navy</span>
+          </div>
+          <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow-sm">
+           <div class="w-4 h-4 rounded-full bg-gray-800"></div><span class="text-xs">Black</span>
+          </div>
+          <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow-sm">
+           <div class="w-4 h-4 rounded-full bg-gray-500"></div><span class="text-xs">Gray</span>
+          </div>
+          <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow-sm">
+           <div class="w-4 h-4 rounded-full bg-white border"></div><span class="text-xs">White</span>
+          </div>
+          <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow-sm">
+           <div class="w-4 h-4 rounded-full bg-blue-200"></div><span class="text-xs">Light Blue</span>
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Teacher View - Submissions -->
+     <div class="mt-8 bg-white rounded-2xl shadow-md p-6">
+      <div class="flex items-center justify-between mb-4">
+       <h2 class="font-heading text-xl font-bold text-slate-800">📊 Submitted Assessments</h2><span id="submission-count" class="bg-slate-100 px-3 py-1 rounded-full text-sm font-semibold text-slate-600">0 submissions</span>
+      </div>
+      <div id="submissions-list" class="space-y-3">
+       <p class="text-slate-400 text-center py-8">No submissions yet. Students will appear here after submitting.</p>
+      </div>
+     </div>
+    </div>
+   </main>
+  </div><!-- Leaderboard Tab -->
+  <div id="leaderboard-tab" class="tab-content hidden">
+   <div class="space-y-6">
+    <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl shadow-md p-8 text-center">
+     <h1 class="font-heading text-4xl font-bold text-slate-800 mb-2">🏆 Leaderboard</h1>
+     <p class="text-slate-600">Top performers in Interview Attire Excellence</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+     <div id="top1-card" class="hidden">
+      <div class="bg-gradient-to-br from-amber-400 to-amber-500 rounded-2xl shadow-lg p-6 text-white text-center transform hover:scale-105 transition-transform">
+       <div class="text-5xl mb-2">
+        🥇
+       </div>
+       <h3 id="top1-name" class="font-heading text-2xl font-bold mb-1">—</h3>
+       <p id="top1-class" class="text-sm opacity-90 mb-2">—</p>
+       <p class="text-lg font-bold opacity-90"><span id="top1-score">0</span>/100</p>
+      </div>
+     </div>
+     <div id="top2-card" class="hidden">
+      <div class="bg-gradient-to-br from-slate-400 to-slate-500 rounded-2xl shadow-lg p-6 text-white text-center transform hover:scale-105 transition-transform">
+       <div class="text-5xl mb-2">
+        🥈
+       </div>
+       <h3 id="top2-name" class="font-heading text-2xl font-bold mb-1">—</h3>
+       <p id="top2-class" class="text-sm opacity-90 mb-2">—</p>
+       <p class="text-lg font-bold opacity-90"><span id="top2-score">0</span>/100</p>
+      </div>
+     </div>
+     <div id="top3-card" class="hidden">
+      <div class="bg-gradient-to-br from-amber-600 to-orange-600 rounded-2xl shadow-lg p-6 text-white text-center transform hover:scale-105 transition-transform">
+       <div class="text-5xl mb-2">
+        🥉
+       </div>
+       <h3 id="top3-name" class="font-heading text-2xl font-bold mb-1">—</h3>
+       <p id="top3-class" class="text-sm opacity-90 mb-2">—</p>
+       <p class="text-lg font-bold opacity-90"><span id="top3-score">0</span>/100</p>
+      </div>
+     </div>
+    </div>
+    <div class="bg-white rounded-2xl shadow-md p-6">
+     <h2 class="font-heading text-2xl font-bold text-slate-800 mb-4">📊 Full Rankings</h2>
+     <div id="leaderboard-list" class="space-y-2">
+      <p class="text-slate-400 text-center py-8">No scores yet. Complete assessments to appear on the leaderboard!</p>
+     </div>
+    </div>
+   </div>
+  </div><!-- Testimonials Tab -->
+  <div id="testimonials-tab" class="tab-content hidden">
+   <div class="space-y-6">
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-md p-8">
+     <h1 class="font-heading text-4xl font-bold text-slate-800 mb-2">💬 Student Testimonials</h1>
+     <p class="text-slate-600 mb-6">Share your experience with the Interview Attire Checker</p><!-- Testimonial Submission Form -->
+     <div class="bg-white rounded-xl p-6 mb-8">
+      <h3 class="font-heading text-xl font-bold text-slate-800 mb-4">✍️ Share Your Feedback</h3>
+      <div class="space-y-4">
+       <div><label class="block text-sm font-semibold text-slate-600 mb-2">👤 Your Name</label> <input type="text" id="testimonial-name" placeholder="Enter your name" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-slate-600 focus:outline-none transition-colors">
+       </div>
+       <div><label class="block text-sm font-semibold text-slate-600 mb-2">⭐ Rating</label>
+        <div class="flex gap-2" id="rating-stars"><button class="star-btn text-3xl hover:scale-110 transition-transform" data-rating="1">☆</button> <button class="star-btn text-3xl hover:scale-110 transition-transform" data-rating="2">☆</button> <button class="star-btn text-3xl hover:scale-110 transition-transform" data-rating="3">☆</button> <button class="star-btn text-3xl hover:scale-110 transition-transform" data-rating="4">☆</button> <button class="star-btn text-3xl hover:scale-110 transition-transform" data-rating="5">☆</button>
+        </div>
+        <p id="rating-display" class="text-sm text-slate-500 mt-2">Select a rating</p>
+       </div>
+       <div><label class="block text-sm font-semibold text-slate-600 mb-2">💭 Your Testimonial</label> <textarea id="testimonial-text" placeholder="What did you like about this tool? How did it help you prepare?" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-slate-600 focus:outline-none transition-colors resize-none h-24"></textarea>
+       </div><button id="submit-testimonial-btn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors"> 📤 Submit Testimonial </button>
+       <p id="testimonial-status" class="text-center text-sm mt-2 text-slate-400"></p>
+      </div>
+     </div>
+    </div><!-- Testimonials Display -->
+    <div class="bg-white rounded-2xl shadow-md p-6">
+     <h2 class="font-heading text-2xl font-bold text-slate-800 mb-4">Recent Feedback</h2>
+     <div id="testimonials-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <p class="text-slate-400 text-center col-span-full py-8">No testimonials yet. Be the first to share!</p>
+     </div>
+    </div>
+   </div>
+  </div> <!-- Footer with Credit -->
+  <footer class="bg-slate-900 text-slate-300 py-6 px-4 mt-8 border-t border-slate-800">
+   <div class="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
+    <div class="text-sm">
+     <p>© 2024 Interview Attire Checker</p>
+    </div>
+    <div class="text-sm font-semibold text-amber-400">
+     Created by: Catherine N. C. Lam (2026)
+    </div>
+    <div class="text-xs text-slate-400">
+     All student data persists across devices
+    </div>
+   </div>
+  </footer>
+  <script>
+    // Default configuration
+    const defaultConfig = {
+      app_title: 'Interview Attire Checker',
+      submit_button_text: 'Submit to Teacher',
+      primary_color: '#1e3a5f',
+      secondary_color: '#f8fafc',
+      accent_color: '#f59e0b',
+      text_color: '#1e293b',
+      success_color: '#10b981'
+    };
+
+    // Point values for each checklist item
+    const pointValues = {
+      'neat-hair': 10,
+      'natural-makeup': 10,
+      'formal-shirt': 15,
+      'blazer': 15,
+      'tie': 10,
+      'formal-pants': 15,
+      'formal-shoes': 15,
+      'minimal-jewelry': 5,
+      'clean-nails': 5
+    };
+
+    let submissions = [];
+    let testimonials = [];
+    let currentScore = 0;
+    let checkedItems = [];
+    let detectedItems = new Set();
+    let hasPhoto = false;
+    let selectedRating = 0;
+
+    // Data handler for the Data SDK
+    const dataHandler = {
+      onDataChanged(data) {
+        submissions = data.filter(item => !item.type || item.type === 'submission');
+        testimonials = data.filter(item => item.type === 'testimonial');
+        renderSubmissions();
+        renderLeaderboard();
+        renderTestimonials();
+      }
+    };
+
+    // Initialize the Element SDK
+    async function initElementSdk() {
+      if (window.elementSdk) {
+        await window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (config) => {
+            document.getElementById('app-title').textContent = config.app_title || defaultConfig.app_title;
+            document.getElementById('submit-btn').innerHTML = `📤 ${config.submit_button_text || defaultConfig.submit_button_text}`;
+          },
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.primary_color || defaultConfig.primary_color,
+                set: (value) => window.elementSdk.setConfig({ primary_color: value })
+              },
+              {
+                get: () => config.secondary_color || defaultConfig.secondary_color,
+                set: (value) => window.elementSdk.setConfig({ secondary_color: value })
+              },
+              {
+                get: () => config.accent_color || defaultConfig.accent_color,
+                set: (value) => window.elementSdk.setConfig({ accent_color: value })
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (value) => window.elementSdk.setConfig({ text_color: value })
+              },
+              {
+                get: () => config.success_color || defaultConfig.success_color,
+                set: (value) => window.elementSdk.setConfig({ success_color: value })
+              }
+            ],
+            borderables: [],
+            fontEditable: undefined,
+            fontSizeable: undefined
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ['app_title', config.app_title || defaultConfig.app_title],
+            ['submit_button_text', config.submit_button_text || defaultConfig.submit_button_text]
+          ])
+        });
+      }
+    }
+
+    // Initialize the Data SDK
+    async function initDataSdk() {
+      if (window.dataSdk) {
+        const result = await window.dataSdk.init(dataHandler);
+        if (!result.isOk) {
+          console.error('Failed to initialize Data SDK');
+        }
+      }
+    }
+
+    // Analyze image to detect items
+    async function analyzeImage(imageData) {
+      // Simulated image analysis - detect items based on image properties
+      // In a real scenario, you'd use AI/ML or image processing
+      detectedItems.clear();
+      
+      // For demo: randomly detect 60-80% of items
+      const detectionRate = 0.65;
+      Object.keys(pointValues).forEach(item => {
+        if (Math.random() < detectionRate) {
+          detectedItems.add(item);
+        }
+      });
+
+      updateDetectionDisplay();
+    }
+
+    // Update detection display
+    function updateDetectionDisplay() {
+      const detectionStatus = document.getElementById('detection-status');
+      const detectionItems = document.getElementById('detection-items');
+      
+      if (detectedItems.size === 0) {
+        detectionStatus.classList.add('hidden');
+        return;
+      }
+
+      const notDetected = Object.keys(pointValues).filter(item => !detectedItems.has(item));
+      
+      if (notDetected.length > 0) {
+        detectionStatus.classList.remove('hidden');
+        detectionItems.innerHTML = notDetected.map(item => {
+          const labels = {
+            'neat-hair': 'Neat hairstyle',
+            'natural-makeup': 'Natural makeup',
+            'formal-shirt': 'Formal shirt',
+            'blazer': 'Blazer/jacket',
+            'tie': 'Tie/scarf',
+            'formal-pants': 'Formal pants',
+            'formal-shoes': 'Formal shoes',
+            'minimal-jewelry': 'Minimal jewelry',
+            'clean-nails': 'Clean nails'
+          };
+          return `<p>❌ ${labels[item]} - Not detected (will score 0)</p>`;
+        }).join('');
+      } else {
+        detectionStatus.classList.add('hidden');
+      }
+
+      // Update checklist UI to show detection status
+      document.querySelectorAll('.checklist-item').forEach(label => {
+        const item = label.dataset.item;
+        const checkbox = label.querySelector('input[type="checkbox"]');
+        
+        if (!detectedItems.has(item)) {
+          label.classList.add('zero-score');
+          checkbox.disabled = true;
+          checkbox.checked = false;
+          // Add not detected badge
+          if (!label.querySelector('.not-detected-badge')) {
+            const badge = document.createElement('span');
+            badge.className = 'not-detected-badge';
+            badge.textContent = '❌ Not Detected';
+            label.appendChild(badge);
+          }
+        } else {
+          label.classList.remove('zero-score');
+          checkbox.disabled = false;
+          const badge = label.querySelector('.not-detected-badge');
+          if (badge) badge.remove();
+        }
+      });
+    }
+
+    // Calculate score based on checked items
+    function calculateScore() {
+      let score = 0;
+      checkedItems = [];
+      
+      document.querySelectorAll('#checklist input[type="checkbox"]').forEach(checkbox => {
+        const item = checkbox.dataset.item;
+        
+        // Only award points if item was detected
+        if (checkbox.checked && detectedItems.has(item)) {
+          checkedItems.push(item);
+          score += pointValues[item] || 0;
+        } else if (checkbox.checked && !detectedItems.has(item)) {
+          // Item was checked but not detected = 0 points
+          checkedItems.push(item);
+        }
+      });
+
+      currentScore = score;
+      updateScoreDisplay();
+    }
+
+    // Update the score display
+    function updateScoreDisplay() {
+      const scoreDisplay = document.getElementById('score-display');
+      const scoreCircle = document.getElementById('score-circle');
+      const scoreFeedback = document.getElementById('score-feedback');
+      const scoreDetails = document.getElementById('score-details');
+
+      scoreDisplay.textContent = currentScore;
+      
+      // Update the conic gradient
+      let scoreColor = '#ef4444'; // red
+      if (currentScore >= 80) {
+        scoreColor = '#10b981'; // green
+      } else if (currentScore >= 60) {
+        scoreColor = '#f59e0b'; // amber
+      } else if (currentScore >= 40) {
+        scoreColor = '#f97316'; // orange
+      }
+      
+      scoreCircle.style.setProperty('--score', currentScore);
+      scoreCircle.style.setProperty('--score-color', scoreColor);
+
+      // Update feedback text
+      const totalItems = Object.keys(pointValues).length;
+      scoreDetails.textContent = `${checkedItems.length} of ${totalItems} items checked`;
+
+      if (!hasPhoto) {
+        scoreFeedback.textContent = 'Upload a photo to start!';
+      } else if (currentScore >= 90) {
+        scoreFeedback.textContent = '🌟 Excellent! Interview ready!';
+      } else if (currentScore >= 75) {
+        scoreFeedback.textContent = '👍 Great! Almost perfect!';
+      } else if (currentScore >= 60) {
+        scoreFeedback.textContent = '😊 Good start! Few improvements needed.';
+      } else if (currentScore >= 40) {
+        scoreFeedback.textContent = '🤔 Needs some work.';
+      } else if (currentScore > 0) {
+        scoreFeedback.textContent = '📝 Keep checking items!';
+      } else {
+        scoreFeedback.textContent = 'Upload a photo and check items!';
+      }
+    }
+
+    // Handle checkbox changes
+    function setupChecklistListeners() {
+      document.querySelectorAll('#checklist input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const label = this.closest('.checklist-item');
+          if (this.checked) {
+            label.classList.add('checked');
+            const checkIcon = label.querySelector('.check-animate');
+            if (!checkIcon) {
+              this.classList.add('check-animate');
+            }
+          } else {
+            label.classList.remove('checked');
+          }
+          calculateScore();
+        });
+      });
+    }
+
+    // Handle photo upload
+    function setupPhotoUpload() {
+      const uploadZone = document.getElementById('upload-zone');
+      const fileInput = document.getElementById('file-input');
+      const uploadContent = document.getElementById('upload-content');
+      const previewContainer = document.getElementById('preview-container');
+      const previewImage = document.getElementById('preview-image');
+      const removeBtn = document.getElementById('remove-photo');
+
+      uploadZone.addEventListener('click', () => fileInput.click());
+
+      uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('dragover');
+      });
+
+      uploadZone.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('dragover');
+      });
+
+      uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          handleFile(files[0]);
+        }
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          handleFile(e.target.files[0]);
+        }
+      });
+
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        hasPhoto = false;
+        detectedItems.clear();
+        uploadContent.classList.remove('hidden');
+        previewContainer.classList.add('hidden');
+        fileInput.value = '';
+        document.getElementById('detection-status').classList.add('hidden');
+        document.querySelectorAll('.checklist-item').forEach(label => {
+          label.classList.remove('zero-score');
+          label.querySelector('input[type="checkbox"]').disabled = false;
+          const badge = label.querySelector('.not-detected-badge');
+          if (badge) badge.remove();
+        });
+        updateScoreDisplay();
+      });
+
+      function handleFile(file) {
+        if (!file.type.startsWith('image/')) {
+          showStatus('Please upload an image file', 'error');
+          return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+          showStatus('File size must be less than 10MB', 'error');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          previewImage.src = e.target.result;
+          uploadContent.classList.add('hidden');
+          previewContainer.classList.remove('hidden');
+          hasPhoto = true;
+          
+          // Analyze the image
+          await analyzeImage(e.target.result);
+          updateScoreDisplay();
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Show status message
+    function showStatus(message, type = 'info') {
+      const statusEl = document.getElementById('submit-status');
+      statusEl.textContent = message;
+      statusEl.className = 'text-center text-sm mt-3 slide-in';
+      
+      if (type === 'error') {
+        statusEl.classList.add('text-red-400');
+      } else if (type === 'success') {
+        statusEl.classList.add('text-emerald-400');
+      } else {
+        statusEl.classList.add('text-slate-400');
+      }
+    }
+
+    // Handle submission
+    async function handleSubmit() {
+      const studentName = document.getElementById('student-name').value.trim();
+      const studentClass = document.getElementById('student-class').value.trim();
+      const submitBtn = document.getElementById('submit-btn');
+
+      if (!studentName) {
+        showStatus('Please enter your full name', 'error');
+        return;
+      }
+
+      if (!studentClass) {
+        showStatus('Please enter your class', 'error');
+        return;
+      }
+
+      if (!hasPhoto) {
+        showStatus('Please upload a photo', 'error');
+        return;
+      }
+
+      if (checkedItems.length === 0) {
+        showStatus('Please check at least one item', 'error');
+        return;
+      }
+
+      // Check limit
+      if (submissions.length >= 999) {
+        showStatus('Maximum submissions reached (999)', 'error');
+        return;
+      }
+
+      // Disable button and show loading
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '⏳ Submitting...';
+
+      const totalItems = Object.keys(pointValues).length;
+      let feedback = '';
+      if (currentScore >= 90) feedback = 'Excellent! Interview ready!';
+      else if (currentScore >= 75) feedback = 'Great! Almost perfect!';
+      else if (currentScore >= 60) feedback = 'Good start!';
+      else if (currentScore >= 40) feedback = 'Needs improvement';
+      else feedback = 'Significant improvement needed';
+
+      const submission = {
+        student_name: studentName,
+        student_class: studentClass,
+        score: currentScore,
+        total_items: totalItems,
+        checked_items: checkedItems.join(','),
+        submitted_at: new Date().toISOString(),
+        feedback: feedback
+      };
+
+      if (window.dataSdk) {
+        const result = await window.dataSdk.create(submission);
+        if (result.isOk) {
+          showStatus('✅ Successfully submitted to teacher!', 'success');
+          // Reset form
+          document.getElementById('student-name').value = '';
+          document.getElementById('student-class').value = '';
+          document.querySelectorAll('#checklist input[type="checkbox"]').forEach(cb => {
+            cb.checked = false;
+            cb.closest('.checklist-item').classList.remove('checked');
+          });
+          
+          // Reset photo
+          document.getElementById('upload-zone').querySelector('#upload-content').classList.remove('hidden');
+          document.getElementById('preview-container').classList.add('hidden');
+          document.getElementById('file-input').value = '';
+          hasPhoto = false;
+          detectedItems.clear();
+          document.getElementById('detection-status').classList.add('hidden');
+          
+          currentScore = 0;
+          checkedItems = [];
+          updateScoreDisplay();
+        } else {
+          showStatus('Failed to submit. Please try again.', 'error');
+        }
+      }
+
+      // Re-enable button
+      submitBtn.disabled = false;
+      const config = window.elementSdk?.config || defaultConfig;
+      submitBtn.innerHTML = `📤 ${config.submit_button_text || defaultConfig.submit_button_text}`;
+    }
+
+    // Render submissions list
+    function renderSubmissions() {
+      const container = document.getElementById('submissions-list');
+      const countEl = document.getElementById('submission-count');
+      
+      countEl.textContent = `${submissions.length} submission${submissions.length !== 1 ? 's' : ''}`;
+
+      if (submissions.length === 0) {
+        container.innerHTML = '<p class="text-slate-400 text-center py-8">No submissions yet. Students will appear here after submitting.</p>';
+        return;
+      }
+
+      // Sort by most recent
+      const sorted = [...submissions].sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+
+      container.innerHTML = sorted.map(sub => {
+        const date = new Date(sub.submitted_at);
+        const timeStr = date.toLocaleString();
+        
+        let scoreClass = 'bg-red-100 text-red-700';
+        if (sub.score >= 80) scoreClass = 'bg-emerald-100 text-emerald-700';
+        else if (sub.score >= 60) scoreClass = 'bg-amber-100 text-amber-700';
+        else if (sub.score >= 40) scoreClass = 'bg-orange-100 text-orange-700';
+
+        const checkedArr = sub.checked_items ? sub.checked_items.split(',') : [];
+
+        return `
+          <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600">
+                ${sub.student_name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h4 class="font-semibold text-slate-800">${sub.student_name}</h4>
+                <p class="text-xs text-slate-500">${sub.student_class} • ${timeStr}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="text-right">
+                <p class="text-sm text-slate-600">${checkedArr.length}/${sub.total_items} items</p>
+                <p class="text-xs text-slate-400">${sub.feedback}</p>
+              </div>
+              <div class="${scoreClass} px-4 py-2 rounded-xl font-bold text-lg min-w-[80px] text-center">
+                ${sub.score}/100
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render leaderboard
+    function renderLeaderboard() {
+      const leaderboardList = document.getElementById('leaderboard-list');
+      const sorted = [...submissions].sort((a, b) => b.score - a.score);
+
+      // Update top 3
+      updateTopCard(1, sorted[0]);
+      updateTopCard(2, sorted[1]);
+      updateTopCard(3, sorted[2]);
+
+      if (sorted.length === 0) {
+        leaderboardList.innerHTML = '<p class="text-slate-400 text-center col-span-full py-8">No scores yet. Complete assessments to appear on the leaderboard!</p>';
+        return;
+      }
+
+      leaderboardList.innerHTML = sorted.map((sub, idx) => {
+        let medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '📌';
+        let bgColor = idx === 0 ? 'bg-amber-50 border-l-4 border-amber-400' : idx === 1 ? 'bg-slate-50 border-l-4 border-slate-400' : idx === 2 ? 'bg-orange-50 border-l-4 border-orange-400' : 'bg-slate-50';
+        
+        return `
+          <div class="flex items-center justify-between p-4 ${bgColor} rounded-lg">
+            <div class="flex items-center gap-4">
+              <span class="text-3xl">${medal}</span>
+              <div>
+                <p class="font-bold text-slate-800">#{idx + 1}</p>
+                <h4 class="font-semibold text-slate-700">${sub.student_name}</h4>
+                <p class="text-xs text-slate-500">${sub.student_class}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-bold text-2xl text-slate-800">${sub.score}</p>
+              <p class="text-xs text-slate-500">/100</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateTopCard(position, data) {
+      const cardId = `top${position}-card`;
+      const card = document.getElementById(cardId);
+      if (!data) {
+        card.classList.add('hidden');
+        return;
+      }
+      card.classList.remove('hidden');
+      document.getElementById(`top${position}-name`).textContent = data.student_name;
+      document.getElementById(`top${position}-class`).textContent = data.student_class;
+      document.getElementById(`top${position}-score`).textContent = data.score;
+    }
+
+    // Render testimonials
+    function renderTestimonials() {
+      const container = document.getElementById('testimonials-list');
+      
+      if (testimonials.length === 0) {
+        container.innerHTML = '<p class="text-slate-400 text-center col-span-full py-8">No testimonials yet. Be the first to share!</p>';
+        return;
+      }
+
+      const sorted = [...testimonials].sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
+
+      container.innerHTML = sorted.map(testi => {
+        const rating = parseInt(testi.rating) || 0;
+        const stars = '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
+        
+        return `
+          <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border-l-4 border-blue-400">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h4 class="font-bold text-slate-800">${testi.student_name}</h4>
+                <p class="text-xs text-slate-500">${new Date(testi.submitted_at).toLocaleDateString()}</p>
+              </div>
+              <span class="text-lg">${stars}</span>
+            </div>
+            <p class="text-slate-700 text-sm leading-relaxed">"${testi.testimonial_text}"</p>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Initialize everything
+    async function init() {
+      await initElementSdk();
+      await initDataSdk();
+      setupChecklistListeners();
+      setupPhotoUpload();
+      setupTabNavigation();
+      setupTestimonialForm();
+      
+      document.getElementById('submit-btn').addEventListener('click', handleSubmit);
+      
+      updateScoreDisplay();
+    }
+
+    // Setup tab navigation
+    function setupTabNavigation() {
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const tabName = this.dataset.tab;
+          
+          // Hide all tabs
+          document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.add('hidden');
+            tab.classList.remove('active');
+          });
+          
+          // Remove active from all buttons
+          document.querySelectorAll('.nav-tab').forEach(b => {
+            b.classList.remove('active', 'bg-slate-700');
+            b.classList.add('hover:bg-slate-600');
+          });
+          
+          // Show selected tab
+          document.getElementById(tabName + '-tab').classList.remove('hidden');
+          document.getElementById(tabName + '-tab').classList.add('active');
+          
+          // Mark button as active
+          this.classList.add('active', 'bg-slate-700');
+          this.classList.remove('hover:bg-slate-600');
+        });
+      });
+    }
+
+    // Setup testimonial form
+    function setupTestimonialForm() {
+      const ratingStars = document.querySelectorAll('.star-btn');
+      const ratingDisplay = document.getElementById('rating-display');
+      
+      ratingStars.forEach(star => {
+        star.addEventListener('click', function() {
+          selectedRating = parseInt(this.dataset.rating);
+          ratingStars.forEach((s, idx) => {
+            if (idx < selectedRating) {
+              s.textContent = '★';
+              s.style.color = '#fbbf24';
+            } else {
+              s.textContent = '☆';
+              s.style.color = 'currentColor';
+            }
+          });
+          const ratings = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+          ratingDisplay.textContent = `${selectedRating}/5 - ${ratings[selectedRating]}`;
+        });
+      });
+
+      document.getElementById('submit-testimonial-btn').addEventListener('click', handleTestimonialSubmit);
+    }
+
+    // Handle testimonial submission
+    async function handleTestimonialSubmit() {
+      const name = document.getElementById('testimonial-name').value.trim();
+      const text = document.getElementById('testimonial-text').value.trim();
+      const statusEl = document.getElementById('testimonial-status');
+      const submitBtn = document.getElementById('submit-testimonial-btn');
+
+      if (!name) {
+        statusEl.textContent = '❌ Please enter your name';
+        statusEl.className = 'text-center text-sm mt-2 text-red-400';
+        return;
+      }
+
+      if (selectedRating === 0) {
+        statusEl.textContent = '❌ Please select a rating';
+        statusEl.className = 'text-center text-sm mt-2 text-red-400';
+        return;
+      }
+
+      if (!text) {
+        statusEl.textContent = '❌ Please write a testimonial';
+        statusEl.className = 'text-center text-sm mt-2 text-red-400';
+        return;
+      }
+
+      if (testimonials.length >= 999) {
+        statusEl.textContent = '❌ Maximum testimonials reached';
+        statusEl.className = 'text-center text-sm mt-2 text-red-400';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '⏳ Submitting...';
+
+      const testimonial = {
+        student_name: name,
+        testimonial_text: text,
+        rating: selectedRating,
+        submitted_at: new Date().toISOString(),
+        type: 'testimonial'
+      };
+
+      if (window.dataSdk) {
+        const result = await window.dataSdk.create(testimonial);
+        if (result.isOk) {
+          statusEl.textContent = '✅ Thank you for your feedback!';
+          statusEl.className = 'text-center text-sm mt-2 text-emerald-400';
+          
+          // Reset form
+          document.getElementById('testimonial-name').value = '';
+          document.getElementById('testimonial-text').value = '';
+          selectedRating = 0;
+          document.querySelectorAll('.star-btn').forEach(s => {
+            s.textContent = '☆';
+            s.style.color = 'currentColor';
+          });
+          document.getElementById('rating-display').textContent = 'Select a rating';
+        } else {
+          statusEl.textContent = '❌ Failed to submit. Try again.';
+          statusEl.className = 'text-center text-sm mt-2 text-red-400';
+        }
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '📤 Submit Testimonial';
+    }
+
+    init();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d65fac3951e454a',t:'MTc3MjUxMjk5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
